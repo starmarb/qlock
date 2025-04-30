@@ -1,11 +1,11 @@
 function setup() {
-    createCanvas(400, 400, WEBGL);
+    createCanvas(300, 300, WEBGL);
   }
   
 let theta, phi;
   
 function draw() {
-    background("white");
+    background("pink");
     orbitControl();
     
     let hr = hour() + minute() / 60;
@@ -57,7 +57,6 @@ function draw() {
     point(0,0,100); //(midnight)
     stroke("green");
     point(0, 0, -100);
-    
     
     noFill();
     stroke(0, 10);
