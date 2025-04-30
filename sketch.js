@@ -2,10 +2,10 @@ function setup() {
     createCanvas(400, 400, WEBGL);
   }
   
-  let theta, phi;
+let theta, phi;
   
-  function draw() {
-    background(220);
+function draw() {
+    background("white");
     orbitControl();
     
     let hr = hour() + minute() / 60;
@@ -62,5 +62,21 @@ function setup() {
     noFill();
     stroke(0, 10);
     sphere(r);
+    
+    diracpart();
   }
+
+function diracpart() {
+  let alpha_yeah = cos(theta / 2);
+  let beta_real = cos(phi) * sin(theta/2);
+  let beta_im = sin(phi) * sin(theta/2);
+  
+  let diracStr = `It is |ψ⟩ = ${alpha_yeah.toFixed(2)}|0⟩ + (${beta_real.toFixed(2)} + ${beta_im.toFixed(2)}i)|1⟩ 'o clock`;
+
+  let diracText = document.getElementById("dirac-part");
+  if (diracText) {
+    diracText.innerText = diracStr;
+  }
+}
+
   
