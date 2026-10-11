@@ -1,10 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>about qlock</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>About qlock</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+      onload="renderMathInElement(document.body, { delimiters: [{ left: '\\(', right: '\\)', display: false }, { left: '\\[', right: '\\]', display: true }], macros: { '\\ket': '\\lvert #1\\rangle' } })"></script>
   </head>
   <body>
-    <h1>"qubit" + "clock" = qlock</h1>
-    <p>qlock is a whimsical application of quantum computing concepts to everyday life. In quantum computers across the world, the qubit will represent a probability state of collapsing to either 0 or 1. But here, it will simply tell us the time, with the hour being told through theta and the minute being told through phi.</p>
+    <header class="site-header">
+      <h1 class="wordmark"><a href="./">|qlock⟩</a></h1>
+      <nav><a href="./">Clock</a></nav>
+    </header>
+
+    <main class="prose">
+      <h2>“qubit” + “clock” = qlock</h2>
+      <p>qlock is a whimsical application of quantum computing concepts to everyday life. In quantum computers across the world, a qubit holds a state that will collapse to either 0 or 1 when measured. Here, it simply tells us the time.</p>
+
+      <h2>Reading the time</h2>
+      <p>Any state of one qubit can be written with two angles, and drawn as a point on the Bloch sphere:</p>
+      <p>\[ \ket{\psi} = \cos\tfrac{\theta}{2}\,\ket{0} + e^{i\phi}\sin\tfrac{\theta}{2}\,\ket{1} \]</p>
+      <p>The hour sets \(\theta\), how far the arrow has tipped away from \(\ket{0}\): midnight points straight at \(\ket{0}\), noon lies on the equator, and the day ends just short of \(\ket{1}\). The minute sets \(\phi\), how far the arrow has turned around the sphere, once every hour.</p>
+
+      <h2>Reading the date</h2>
+      <p>Two angles are all a single qubit has, and both are already telling the time, so the date gets a qubit of its own, drawn as the pink arrow on the same sphere. The month sets its \(\theta\) and the day sets its \(\phi\), so 1 January is \(\ket{0}\) and the year ends near \(\ket{1}\). Together the two qubits make one state, \(\ket{t} \otimes \ket{d}\).</p>
+
+      <h2>Building the state with gates</h2>
+      <p>Every qubit in a quantum computer starts in \(\ket{0}\). Below the clock are three ways to reach the current state from there: two rotations, a single general \(U\) gate, or a sequence of the discrete gates real hardware runs, which gets very close but usually not exactly there.</p>
+    </main>
   </body>
 </html>
