@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "qlock page layout",
+  "description": "A page is an ordered list of sections. Each section type maps to one React component in src/ui/render.tsx.",
+  "type": "object",
+  "required": ["version", "title", "sections"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "title": { "type": "string" },
+    "sections": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": { "type": { "const": "lede" }, "text": { "type": "string", "minLength": 1 } },
+            "required": ["type", "text"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": { "type": { "const": "sphere" }, "caption": { "type": "string" } },
+            "required": ["type"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": { "const": "readout" },
+              "rows": { "type": "array", "items": { "enum": ["time", "date"] }, "minItems": 1 }
+            },
+            "required": ["type", "rows"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": { "const": "odds" },
+              "title": { "type": "string", "minLength": 1 },
+              "note": { "type": "string", "minLength": 1 }
+            },
+            "required": ["type", "title", "note"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": { "type": { "const": "state" } },
+            "required": ["type"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": { "const": "circuit" },
+              "title": { "type": "string", "minLength": 1 },
+              "modes": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "enum": ["rot", "u", "ht"] },
+                    "label": { "type": "string", "minLength": 1 },
+                    "caption": { "type": "string", "minLength": 1 }
+                  },
+                  "required": ["id", "label", "caption"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": ["type", "title", "modes"],
+            "additionalProperties": false
+          }
+        ]
+      }
+    }
+  }
+}

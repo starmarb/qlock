@@ -1,0 +1,28 @@
+{
+  "name": "qlock",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "A clock that tells the time and date as the state of two qubits, rendered with Three.js and custom GLSL shaders.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "node --experimental-strip-types --test src/quantum.test.ts"
+  },
+  "dependencies": {
+    "katex": "^0.16.11",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@types/katex": "^0.16.7",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/three": "^0.170.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.0"
+  }
+}

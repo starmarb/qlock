@@ -1,0 +1,37 @@
+{
+  "$schema": "./layout.schema.json",
+  "version": 1,
+  "title": "qlock",
+  "sections": [
+    { "type": "lede", "text": "The time and date, written as the state of two qubits." },
+    { "type": "sphere", "caption": "Drag to turn the sphere. Double-click to reset the view." },
+    { "type": "readout", "rows": ["time", "date"] },
+    {
+      "type": "odds",
+      "title": "If you measured now",
+      "note": "Measuring collapses each qubit to |0⟩ or |1⟩. The dashed rings on the sphere mark these odds: every point on a ring has the same chance."
+    },
+    { "type": "state" },
+    {
+      "type": "circuit",
+      "title": "Gates that build this state",
+      "modes": [
+        {
+          "id": "rot",
+          "label": "Rotations",
+          "caption": "Start in |0⟩, tilt down by θ with an R<sub>y</sub> rotation, then turn by φ around the z-axis with R<sub>z</sub>. This is exact, up to a global phase."
+        },
+        {
+          "id": "u",
+          "label": "One U gate",
+          "caption": "U(θ, φ, λ) is the general single-qubit gate, so one gate can do both rotations. Its third angle λ would only add a global phase to |0⟩, so it is set to 0."
+        },
+        {
+          "id": "ht",
+          "label": "Clifford + T",
+          "caption": "Real quantum hardware runs a small, fixed set of gates. This is the shortest sequence of H, S, T, Z and their inverses found that reaches each state with fidelity of at least 0.999, searching up to seven H gates. Where none gets there, it is the closest one found."
+        }
+      ]
+    }
+  ]
+}

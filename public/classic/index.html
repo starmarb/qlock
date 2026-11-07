@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>qlock</title>
+    <meta name="description" content="A clock that tells the time and date as the state of two qubits." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.5/lib/p5.min.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <h1 class="wordmark"><a href="./">|qlock⟩</a></h1>
+      <nav><a href="about.html">About</a></nav>
+    </header>
+
+    <main>
+      <p class="lede">The time and date, written as the state of two qubits.</p>
+
+      <figure class="sphere">
+        <div id="qlock" aria-label="Bloch sphere showing the time and date qubits" role="img"></div>
+        <figcaption>Drag to turn the sphere. Double-click to reset the view.</figcaption>
+      </figure>
+
+      <dl class="readout">
+        <div class="row time">
+          <dt><span class="swatch"></span>Time</dt>
+          <dd class="value" id="time-value">--:--</dd>
+          <dd class="angles" id="time-angles"></dd>
+        </div>
+        <div class="row date">
+          <dt><span class="swatch"></span>Date</dt>
+          <dd class="value" id="date-value">--</dd>
+          <dd class="angles" id="date-angles"></dd>
+        </div>
+      </dl>
+
+      <section class="state" aria-labelledby="state-heading">
+        <h2 id="state-heading">It is <span id="psi-inline"></span> o’clock</h2>
+        <div id="state-math" class="math"></div>
+      </section>
+
+      <section class="gates" aria-labelledby="gates-heading">
+        <h2 id="gates-heading">Gates that build this state</h2>
+        <div class="tabs" role="tablist" aria-label="Gate set">
+          <button role="tab" id="tab-rot" data-mode="rot" aria-selected="true">Rotations</button>
+          <button role="tab" id="tab-u" data-mode="u" aria-selected="false">One U gate</button>
+          <button role="tab" id="tab-ht" data-mode="ht" aria-selected="false">Clifford + T</button>
+        </div>
+        <div class="circuit-wrap" role="tabpanel" aria-labelledby="tab-rot">
+          <svg id="circuit" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <p class="circuit-note" id="circuit-note" hidden></p>
+        <p class="caption" id="circuit-caption"></p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>A personal project by Sammi Kwon, made with p5.js.</p>
+    </footer>
+
+    <script src="sketch.js"></script>
+  </body>
+</html>

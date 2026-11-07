@@ -1,0 +1,172 @@
+/* Design system components. Each block documents its states; system.html
+ * renders every one of them so they can be checked side by side. */
+
+/* ---------- Button ----------
+ * variants: primary, quiet
+ * states: rest, hover, active (pressed), focus-visible, disabled, busy
+ */
+.ds-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.25rem;
+  padding: 0 var(--space-4);
+  border: var(--rule-width) solid var(--color-ink);
+  border-radius: var(--radius-sm);
+  background: var(--color-ink);
+  color: var(--color-bg);
+  font: inherit;
+  font-size: var(--text-md);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    opacity var(--duration-fast) var(--ease-out);
+}
+.ds-button:hover { background: color-mix(in srgb, var(--color-ink) 85%, var(--color-bg)); }
+.ds-button:active { transform: translateY(1px); }
+.ds-button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.ds-button:disabled,
+.ds-button[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; transform: none; }
+.ds-button[aria-busy="true"] { cursor: progress; }
+.ds-button[aria-busy="true"] .ds-button__spinner { display: inline-block; }
+
+.ds-button--quiet {
+  background: transparent;
+  color: var(--color-ink);
+  border-color: var(--color-rule);
+}
+.ds-button--quiet:hover { background: var(--color-faint); }
+
+.ds-button__spinner {
+  display: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ds-spin 700ms linear infinite;
+}
+@keyframes ds-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ds-button__spinner { animation: none; } }
+
+/* ---------- Tabs ----------
+ * states: rest, hover, selected, focus-visible
+ * keyboard: ←/→ move, Home/End jump, roving tabindex
+ */
+.ds-tabs {
+  position: relative;
+  display: flex;
+  gap: var(--space-5);
+  border-bottom: var(--rule-width) solid var(--color-rule);
+}
+.ds-tabs__tab {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: var(--space-2) 0;
+  font: inherit;
+  font-size: var(--text-md);
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.ds-tabs__tab:hover { color: var(--color-ink); }
+.ds-tabs__tab[aria-selected="true"] { color: var(--color-ink); }
+.ds-tabs__tab:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+/* one underline that slides between tabs instead of each tab owning a border */
+.ds-tabs__indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--color-ink);
+  transition:
+    transform var(--duration-base) var(--ease-out),
+    width var(--duration-base) var(--ease-out);
+}
+
+/* ---------- Meter ----------
+ * a horizontal bar for a probability, with an optional observed mark
+ * tones: ink, date
+ */
+.ds-meter {
+  position: relative;
+  height: 0.5rem;
+  background: var(--color-faint);
+  border-radius: var(--radius-sm);
+  overflow: visible;
+}
+.ds-meter__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--color-ink);
+  border-radius: var(--radius-sm);
+  transform-origin: left center;
+  transition: width var(--duration-slow) var(--ease-in-out);
+}
+.ds-meter--date .ds-meter__fill { background: var(--color-date); }
+.ds-meter__observed {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--color-muted);
+  transition: left var(--duration-base) var(--ease-out);
+}
+
+/* ---------- Readout row ---------- */
+.ds-readout {
+  margin: 0;
+  border-top: var(--rule-width) solid var(--color-rule);
+}
+.ds-readout__row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr auto;
+  align-items: baseline;
+  gap: 0 var(--space-4);
+  padding: 0.875rem 0;
+  border-bottom: var(--rule-width) solid var(--color-rule);
+}
+.ds-readout__label { color: var(--color-muted); font-size: var(--text-md); }
+.ds-readout__value {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+.ds-readout__aside {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  text-align: right;
+  white-space: nowrap;
+}
+.ds-readout__aside .katex { font-size: 1.05em; color: var(--color-ink); }
+
+/* ---------- Swatch ---------- */
+.ds-swatch {
+  display: inline-block;
+  width: 0.875rem;
+  height: 2px;
+  margin-right: var(--space-2);
+  background: var(--color-ink);
+  vertical-align: 0.3em;
+}
+.ds-swatch--date { background: var(--color-date); }
+.ds-swatch--dashed {
+  background: repeating-linear-gradient(90deg, currentColor 0 3px, transparent 3px 5px);
+  color: var(--color-ink);
+}
+.ds-swatch--dashed.ds-swatch--date { color: var(--color-date); }
+
+@media (max-width: 480px) {
+  .ds-readout__row { grid-template-columns: 4.5rem 1fr; }
+  .ds-readout__aside { grid-column: 2; text-align: left; margin-top: 0.125rem; }
+  .ds-tabs { gap: 1.125rem; }
+}
