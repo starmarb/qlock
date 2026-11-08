@@ -321,7 +321,7 @@ section { margin-top: var(--space-6); }
 .d-axis { stroke: var(--color-rule); stroke-dasharray: 2 3; }
 .d-tick { stroke: var(--color-muted); stroke-width: 1; }
 .d-tick.is-back { opacity: 0.35; }
-.d-label { fill: var(--color-ink); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.d-label { fill: var(--color-ink); font-size: 13.5px; font-variant-numeric: tabular-nums; }
 .d-label.is-back { fill: var(--color-muted); }
 .d-ket { font-family: var(--font-math); font-size: 17px; fill: var(--color-ink); }
 .d-ket--one { fill: var(--color-muted); }
@@ -333,24 +333,30 @@ section { margin-top: var(--space-6); }
 .d-greek { font-family: var(--font-math); font-style: italic; font-size: 15px; fill: var(--hand); }
 .d-hand { stroke: var(--hand); stroke-width: 2.75; stroke-linecap: round; }
 .d-tip { fill: var(--hand); stroke: var(--color-bg); stroke-width: 1.5; }
+.d-hand-time { --hand: var(--color-ink); }
+.d-hand-date { --hand: var(--color-date); }
 .d-origin { fill: var(--color-ink); }
-.diagram--ink { --hand: var(--color-ink); }
-.diagram--date { --hand: var(--color-date); }
-.diagram--date .d-meridian { stroke: var(--color-date); }
+.diagram--focus-time { --hand: var(--color-ink); }
+.diagram--focus-date { --hand: var(--color-date); }
+.d-l-time { fill: var(--color-ink); }
+.d-l-date { fill: var(--color-date); font-size: 12.5px; }
+.d-label.is-back .d-l-time { fill: var(--color-muted); }
+.d-label.is-back .d-l-date { fill-opacity: 0.6; }
 
 .diagram__scrub {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-2) var(--space-3);
+  grid-template-columns: 4.25rem minmax(0, 1fr) 7.5rem;
+  gap: var(--space-3);
   align-items: center;
   max-width: 30rem;
   margin: var(--space-3) auto 0;
   font-size: var(--text-sm);
 }
-.diagram__scrub label { color: var(--color-muted); }
-.diagram__value { font-size: var(--text-lg); font-weight: var(--weight-medium); font-variant-numeric: tabular-nums; text-align: right; }
+.diagram__scrub label { color: var(--color-muted); white-space: nowrap; }
+.diagram__value { font-size: var(--text-md); font-weight: var(--weight-medium); font-variant-numeric: tabular-nums; text-align: right; }
 .diagram__scrub input { width: 100%; accent-color: var(--color-ink); }
-.diagram.is-date .diagram__scrub input { accent-color: var(--color-date); }
+.diagram__scrub input.is-date { accent-color: var(--color-date); }
+.diagram__reset { max-width: 30rem; margin: var(--space-3) auto 0; }
 .diagram__caption { max-width: 30rem; margin: var(--space-3) auto 0; font-size: var(--text-sm); color: var(--color-muted); }
 .diagram__caption .katex { color: var(--color-ink); font-size: 1.05em; }
 

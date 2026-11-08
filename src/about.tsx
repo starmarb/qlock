@@ -22,7 +22,7 @@ function About() {
       <BlochDiagram />
 
       <h2>Reading the date</h2>
-      <p>Two angles are all a single qubit has, and both are already telling the time, so the date gets a qubit of its own, drawn as the pink arrow on the same sphere. The month sets its <K s="\theta" /> and the day sets its <K s="\phi" />, so 1 January is <K s="\ket{0}" /> and the year ends near <K s="\ket{1}" />. Switch the diagram above to the date qubit to see it. Together the two qubits make one state, <K s="\ket{t} \otimes \ket{d}" />.</p>
+      <p>Two angles are all a single qubit has, and both are already telling the time, so the date gets a qubit of its own, drawn as the pink arrow on the same sphere. The month sets its <K s="\theta" /> and the day sets its <K s="\phi" />, so 1 January is <K s="\ket{0}" /> and the year ends near <K s="\ket{1}" />. The pink hand in the diagram above is the date qubit. Together the two qubits make one state, <K s="\ket{t} \otimes \ket{d}" />.</p>
 
       <h2>Measuring the clock</h2>
       <p>Measuring a qubit collapses it to <K s="\ket{0}" /> or <K s="\ket{1}" />. The chance of reading 0 is</p>
