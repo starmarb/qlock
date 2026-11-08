@@ -202,3 +202,109 @@ export function sequenceNote(r: GateSequence): string {
   if (r.fidelity >= 0.99995) return `${n}, fidelity above 0.9999`;
   return `${n}, fidelity ${r.fidelity.toFixed(4)}`;
 }
+
+// ---------------------------------------------------------------------------
+// Gate simulator for the sandbox. A single-qubit state is two complex
+// amplitudes, stored flat as [a.re, a.im, b.re, b.im].
+
+export type Ket = [number, number, number, number];
+export type GateKind = "H" | "X" | "Y" | "Z" | "S" | "T" | "Sdg" | "Tdg" | "Ry" | "Rz" | "U";
+
+export interface PlacedGate {
+  id: number;
+  kind: GateKind;
+  angle?: number;   // Ry, Rz, and U's θ
+  angle2?: number;  // U's φ
+  label?: string;   // exact angle text when loaded from an answer
+}
+
+export const PARAM_GATES: GateKind[] = ["Ry", "Rz"];
+export const ZERO: Ket = [1, 0, 0, 0];
+
+type M = [number, number, number, number, number, number, number, number]; // m00 m01 m10 m11, re/im pairs
+
+function matrix(g: Pick<PlacedGate, "kind" | "angle" | "angle2">): M {
+  const s2 = Math.SQRT1_2;
+  const a = g.angle ?? 0;
+  switch (g.kind) {
+    case "H": return [s2, 0, s2, 0, s2, 0, -s2, 0];
+    case "X": return [0, 0, 1, 0, 1, 0, 0, 0];
+    case "Y": return [0, 0, 0, -1, 0, 1, 0, 0];
+    case "Z": return [1, 0, 0, 0, 0, 0, -1, 0];
+    case "S": return [1, 0, 0, 0, 0, 0, 0, 1];
+    case "Sdg": return [1, 0, 0, 0, 0, 0, 0, -1];
+    case "T": return [1, 0, 0, 0, 0, 0, s2, s2];
+    case "Tdg": return [1, 0, 0, 0, 0, 0, s2, -s2];
+    case "Ry": {
+      const c = Math.cos(a / 2), s = Math.sin(a / 2);
+      return [c, 0, -s, 0, s, 0, c, 0];
+    }
+    case "Rz": {
+      const c = Math.cos(a / 2), s = Math.sin(a / 2);
+      return [c, -s, 0, 0, 0, 0, c, s];
+    }
+    case "U": {
+      // U(θ, φ, 0)
+      const c = Math.cos(a / 2), s = Math.sin(a / 2), p = g.angle2 ?? 0;
+      const er = Math.cos(p), ei = Math.sin(p);
+      return [c, 0, -s, 0, er * s, ei * s, er * c, ei * c];
+    }
+  }
+}
+
+export function applyGate(k: Ket, g: Pick<PlacedGate, "kind" | "angle" | "angle2">): Ket {
+  const m = matrix(g);
+  const [ar, ai, br, bi] = k;
+  const mul = (xr: number, xi: number, yr: number, yi: number) => [xr * yr - xi * yi, xr * yi + xi * yr];
+  const [p, q] = mul(m[0], m[1], ar, ai), [r, s] = mul(m[2], m[3], br, bi);
+  const [t, u] = mul(m[4], m[5], ar, ai), [v, w] = mul(m[6], m[7], br, bi);
+  return [p + r, q + s, t + v, u + w];
+}
+
+export function runGates(gates: Pick<PlacedGate, "kind" | "angle" | "angle2">[]): Ket {
+  return gates.reduce(applyGate, ZERO);
+}
+
+/** |⟨target|ψ⟩|², where the target is the state at Bloch angles θ, φ. */
+export function fidelity(k: Ket, theta: number, phi: number): number {
+  const t0 = Math.cos(theta / 2);
+  const t1r = Math.cos(phi) * Math.sin(theta / 2), t1i = Math.sin(phi) * Math.sin(theta / 2);
+  const [ar, ai, br, bi] = k;
+  // conj(t0)·a + conj(t1)·b
+  const re = t0 * ar + t1r * br + t1i * bi;
+  const im = t0 * ai + t1r * bi - t1i * br;
+  return re * re + im * im;
+}
+
+export function blochOf(k: Ket): [number, number, number] {
+  const [ar, ai, br, bi] = k;
+  return [2 * (ar * br + ai * bi), 2 * (ar * bi - ai * br), ar * ar + ai * ai - br * br - bi * bi];
+}
+
+const ANSWER_KIND: Record<string, GateKind> = { H: "H", T: "T", S: "S", Z: "Z", "S†": "Sdg", "T†": "Tdg" };
+
+/** The answer for a mode, as gates the sandbox can load. */
+export function answerGates(mode: GateMode, q: Qubit): Omit<PlacedGate, "id">[] {
+  if (mode === "rot") {
+    return [
+      { kind: "Ry", angle: q.theta.value, label: fracText(q.theta) },
+      { kind: "Rz", angle: q.phi.value, label: fracText(q.phi) },
+    ];
+  }
+  if (mode === "u") {
+    return [{ kind: "U", angle: q.theta.value, angle2: q.phi.value, label: `${fracText(q.theta)}, ${fracText(q.phi)}, 0` }];
+  }
+  return cliffordT(q.theta.value, q.phi.value).gates.map((g) => ({ kind: ANSWER_KIND[g.name] }));
+}
+
+/** An angle as a multiple of π, to three places: 0.587π. */
+export function piText(a: number): string {
+  const x = a / Math.PI;
+  if (Math.abs(x) < 5e-4) return "0";
+  // simple fractions read better: π/2, 3π/4, 5π/6
+  for (let d = 1; d <= 12; d++) {
+    const n = Math.round(x * d);
+    if (Math.abs(x * d - n) < 1e-6) return fracText(piFrac(n, d));
+  }
+  return `${x.toFixed(3)}π`;
+}

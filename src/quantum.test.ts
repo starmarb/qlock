@@ -52,3 +52,43 @@ test("percent formatting at the edges", () => {
   assert.equal(percent(0.0004), "<0.1%");
   assert.equal(percent(0.9996), ">99.9%");
 });
+
+import { runGates, fidelity, blochOf, answerGates, cliffordT as ct } from "./quantum.ts";
+
+test("Ry(θ) then Rz(φ) reaches the clock state exactly", () => {
+  const s = readClock(new Date(2026, 10, 7, 14, 5));
+  for (const q of [s.time, s.date]) {
+    const k = runGates(answerGates("rot", q));
+    close(fidelity(k, q.theta.value, q.phi.value), 1);
+  }
+});
+
+test("one U gate reaches the clock state exactly", () => {
+  const s = readClock(new Date(2026, 2, 20, 6, 30));
+  const k = runGates(answerGates("u", s.date));
+  close(fidelity(k, s.date.theta.value, s.date.phi.value), 1);
+});
+
+test("replaying the Clifford + T answer gives the fidelity the search reported", () => {
+  const s = readClock(new Date(2026, 10, 7, 14, 5));
+  const r = ct(s.time.theta.value, s.time.phi.value);
+  const k = runGates(answerGates("ht", s.time));
+  close(fidelity(k, s.time.theta.value, s.time.phi.value), r.fidelity, 1e-9);
+});
+
+test("H then S points along +y", () => {
+  const [x, y, z] = blochOf(runGates([{ kind: "H" }, { kind: "S" }]));
+  close(x, 0); close(y, 1); close(z, 0);
+});
+
+test("X flips |0⟩ to |1⟩", () => {
+  close(blochOf(runGates([{ kind: "X" }]))[2], -1);
+});
+
+import { piText } from "./quantum.ts";
+test("piText prefers simple fractions", () => {
+  assert.equal(piText(Math.PI / 2), "π/2");
+  assert.equal(piText((3 * Math.PI) / 4), "3π/4");
+  assert.equal(piText(2 * Math.PI), "2π");
+  assert.equal(piText((211 * Math.PI) / 360), "0.586π");
+});

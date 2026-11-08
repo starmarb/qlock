@@ -9,7 +9,9 @@
 
 import { Fragment, type ReactNode } from "react";
 import { BlochSphere } from "../components/BlochSphere";
-import { CircuitPanel, OddsPanel, ReadoutPanel, StatePanel, type CircuitMode } from "../components/panels";
+import { ReadoutPanel, StatePanel } from "../components/panels";
+import { MeasurePanel } from "../components/MeasurePanel";
+import { Sandbox, type CircuitMode } from "../components/Sandbox";
 import type { QubitName } from "../quantum";
 
 export interface Section { type: string; [prop: string]: unknown }
@@ -42,14 +44,14 @@ export const registry: Record<string, Entry<any>> = {
   ),
   odds: entry(
     (s) => (isStr(s.title) && isStr(s.note) ? { title: s.title, note: s.note } : "needs title and note"),
-    (p) => <OddsPanel {...p} />,
+    (p) => <MeasurePanel {...p} />,
   ),
   state: entry(() => ({}), () => <StatePanel />),
   circuit: entry(
-    (s) => (isStr(s.title) && Array.isArray(s.modes) && s.modes.length > 0 && s.modes.every(isMode)
-      ? { title: s.title, modes: s.modes as CircuitMode[] }
-      : "needs a title and at least one mode with id, label and caption"),
-    (p) => <CircuitPanel {...p} />,
+    (s) => (isStr(s.title) && isStr(s.intro) && Array.isArray(s.modes) && s.modes.length > 0 && s.modes.every(isMode)
+      ? { title: s.title, intro: s.intro, modes: s.modes as CircuitMode[] }
+      : "needs a title, an intro, and at least one mode with id, label and caption"),
+    (p) => <Sandbox {...p} />,
   ),
 };
 

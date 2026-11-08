@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 type Page = "clock" | "about" | "system";
 
 const NAV: { id: Page; href: string; label: string }[] = [
-  { id: "clock", href: "./", label: "Clock" },
+  { id: "clock", href: "./", label: "Qlock" },
   { id: "about", href: "about.html", label: "About" },
   { id: "system", href: "system.html", label: "System" },
 ];

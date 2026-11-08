@@ -3,18 +3,33 @@
   "version": 1,
   "title": "qlock",
   "sections": [
-    { "type": "lede", "text": "The time and date, written as the state of two qubits." },
-    { "type": "sphere", "caption": "Drag to turn the sphere. Double-click to reset the view." },
-    { "type": "readout", "rows": ["time", "date"] },
+    {
+      "type": "lede",
+      "text": "The time and date, written as the state of two qubits."
+    },
+    {
+      "type": "sphere",
+      "caption": "Drag to turn the sphere. Double-click to reset the view."
+    },
+    {
+      "type": "readout",
+      "rows": [
+        "time",
+        "date"
+      ]
+    },
     {
       "type": "odds",
       "title": "If you measured now",
-      "note": "Measuring collapses each qubit to |0⟩ or |1⟩. The dashed rings on the sphere mark these odds: every point on a ring has the same chance."
+      "note": "Each measurement is a dart thrown at this square. The lines split it by each qubit’s odds, so the cell a dart lands in is what the clock reads."
     },
-    { "type": "state" },
+    {
+      "type": "state"
+    },
     {
       "type": "circuit",
-      "title": "Gates that build this state",
+      "title": "Try to make this state with gates",
+      "intro": "Both qubits start at |0⟩. Add gates to steer each one to where the clock is pointing. The dashed hand is the target; the solid one is yours.",
       "modes": [
         {
           "id": "rot",
@@ -29,7 +44,7 @@
         {
           "id": "ht",
           "label": "Clifford + T",
-          "caption": "Real quantum hardware runs a small, fixed set of gates. This is the shortest sequence of H, S, T, Z and their inverses found that reaches each state with fidelity of at least 0.999, searching up to seven H gates. Where none gets there, it is the closest one found."
+          "caption": "Real quantum hardware runs a small, fixed set of gates. This is the shortest sequence of H, S, T, Z and their inverses found that reaches each state with fidelity of at least 0.999, searching up to seven H gates. Where none gets there, it is the closest one found. Try building it from the fixed gates alone."
         }
       ]
     }
