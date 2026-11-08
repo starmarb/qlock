@@ -249,7 +249,7 @@ export function Sandbox({ title, intro, modes }: { title: string; intro: string;
             <Button variant="quiet" onClick={undo} disabled={!history.length}>Undo</Button>
             <Button variant="quiet" onClick={clear} disabled={!wires.time.length && !wires.date.length}>Clear</Button>
             <Button variant="quiet" onClick={() => setShowAnswer(!showAnswer)} aria-expanded={showAnswer} aria-controls="answer">
-              {showAnswer ? "Hide the answer" : "Show an answer"}
+              {showAnswer ? "Hide Answers" : "Show Answers"}
             </Button>
           </div>
         )}

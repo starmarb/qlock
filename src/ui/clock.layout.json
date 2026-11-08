@@ -19,17 +19,17 @@
       ]
     },
     {
-      "type": "odds",
-      "title": "If you measured now",
-      "note": "Each measurement is a dart thrown at this square. The lines split it by each qubit’s odds, so the cell a dart lands in is what the clock reads."
-    },
-    {
       "type": "state"
     },
     {
+      "type": "odds",
+      "title": "Measurement",
+      "note": "Each measurement is a dart thrown at this square. The lines split it by each qubit’s odds, so the cell a dart lands in is what the clock reads."
+    },
+    {
       "type": "circuit",
-      "title": "Try to make this state with gates",
-      "intro": "Both qubits start at |0⟩. Add gates to steer each one to where the clock is pointing. The dashed hand is the target; the solid one is yours.",
+      "title": "Sandbox",
+      "intro": "Try to make this state with gates. Both qubits start at |0⟩. Add gates to steer each one to where the clock is pointing. The dashed hand is the target; the solid one is yours.",
       "modes": [
         {
           "id": "rot",

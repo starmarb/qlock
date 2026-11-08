@@ -9,8 +9,8 @@ qlock tells the time and date as the state of two qubits, drawn together on one 
 A single qubit's state is fixed by just two angles, and both are already telling the time, so the date gets its own qubit. The full state is |t⟩ ⊗ |d⟩.
 
 Under the clock:
-- **If you measured now:** a square split by each qubit's odds, so its four cells are the four possible readings with areas equal to their chances. Each measurement is a dart thrown at the square, and the cell it lands in is what the clock reads, so the hand on the sphere collapses to that pole. "Measure 100 times" throws a hundred darts, and you can watch the cells fill in proportion to their odds.
-- **Try to make this state with gates:** both qubits start at |0⟩ and you add gates (H, X, Y, Z, S, T, their inverses, and R<sub>y</sub>/R<sub>z</sub> at any angle) to steer each one to the clock's state. A small sphere per qubit shows your hand against the target, with how close you are. "Show an answer" reveals three solutions (two rotations, one U gate, or the shortest Clifford + T sequence found) and can load any of them into the sandbox.
+- **Measurement:** a square split by each qubit's odds, so its four cells are the four possible readings with areas equal to their chances. Each measurement is a dart thrown at the square, and the cell it lands in is what the clock reads, so the hand on the sphere collapses to that pole. "Measure 100 times" throws a hundred darts, and you can watch the cells fill in proportion to their odds.
+- **Sandbox:** try to make this state with gates. Both qubits start at |0⟩ and you add gates (H, X, Y, Z, S, T, their inverses, and R<sub>y</sub>/R<sub>z</sub> at any angle) to steer each one to the clock's state. A small sphere per qubit shows your hand against the target, with how close you are. "Show Answers" reveals three solutions (two rotations, one U gate, or the shortest Clifford + T sequence found) and can load any of them into the sandbox.
 
 The About page has a labelled diagram of the sphere with a slider to scrub through the day or the year, so you can see where each hour, minute, month, and day puts the hand.
 

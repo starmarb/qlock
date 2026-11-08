@@ -35,7 +35,7 @@ function About() {
 
       <h2>How it is drawn</h2>
       <p>The sphere is rendered live in the browser with Three.js and custom GLSL shaders. Everything on the glass is computed per pixel from where that pixel sits on the sphere: the great circles, the graticule, the odds rings, the glow where each hand touches the glass, the wave that spreads out when you measure, and thin ripples that drift outward from each hand tip.</p>
-      <p>It has to run live rather than as a video because the picture depends on the exact minute, the date, where you have turned the sphere, your light or dark theme, and the random result of each measurement. A video could show none of that. To keep it light, the page only draws frames while something is moving, stops when the sphere is scrolled away or the tab is hidden, caps the pixel ratio at 2, and holds still entirely if your system asks for reduced motion. Add <code>?debug</code> to the address to see the frame rate.</p>
+      <p>It has to run live rather than as a video because the picture depends on the exact minute, the date, where you have turned the sphere, your light or dark theme, and the random result of each measurement. To keep it light, the page only draws frames while something is moving, stops when the sphere is scrolled away or the tab is hidden, caps the pixel ratio at 2, and holds still entirely if your system asks for reduced motion. Add <code>?debug</code> to the address to see the frame rate.</p>
     </Shell>
   );
 }

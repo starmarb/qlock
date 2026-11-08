@@ -23,7 +23,6 @@ export function Shell({ page, children }: { page: Page; children: ReactNode }) {
       <footer className="site-footer">
         <p>
           A personal project by Sammi Kwon, made with React, Three.js and hand-written GLSL.
-          The original p5.js version is <a href="classic/">still here</a>.
         </p>
       </footer>
     </>
