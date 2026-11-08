@@ -68,11 +68,14 @@ export function MeasurePanel({ title, note }: { title: string; note: string }) {
             const cx = c.x + c.w / 2, cy = c.y + c.h / 2;
             return (
               <g key={`l${c.bits}`} className="mosaic__label">
-                <text x={cx} y={big ? cy - 4 : cy + 4} textAnchor="middle" className={`mosaic__ket${big ? "" : " is-small"}`}>
+                <text x={cx} y={big ? cy - (total > 0 ? 10 : 4) : cy + 4} textAnchor="middle" className={`mosaic__ket${big ? "" : " is-small"}`}>
                   |<tspan className="k-time">{c.bits[0]}</tspan><tspan className="k-date">{c.bits[1]}</tspan>⟩
                 </text>
-                {big && <text x={cx} y={cy + 14} textAnchor="middle" className="mosaic__pct">
-                  {percent(c.p)}{total > 0 ? ` · ${tally[c.bits]} hit` : ""}
+                {big && <text x={cx} y={cy + (total > 0 ? 8 : 14)} textAnchor="middle" className="mosaic__pct">
+                  {percent(c.p)} chance
+                </text>}
+                {big && total > 0 && <text x={cx} y={cy + 22} textAnchor="middle" className="mosaic__pct mosaic__pct--count">
+                  {c.w >= 132 ? `${tally[c.bits]} of ${total} landed here` : `${tally[c.bits]} landed`}
                 </text>}
               </g>
             );
@@ -106,12 +109,17 @@ export function MeasurePanel({ title, note }: { title: string; note: string }) {
             </div>
             <p className="reading__text">
               {shown ? (
-                <>Time read <b>{shown.time}</b>, date read <b>{shown.date}</b>. That had a {percent(chance)} chance.</>
+                <>Time read <b>{shown.time}</b>, date read <b>{shown.date}</b> with a {percent(chance)} chance.</>
               ) : (
                 <>Not measured yet, so both qubits are still in superposition.</>
               )}
             </p>
-            {total > 0 && <p className="reading__count">{total} dart{total === 1 ? "" : "s"} this minute</p>}
+            {total > 0 && (
+              <p className="reading__count">
+                {total} measurement{total === 1 ? "" : "s"} so far, one dot each. The dots clear when the minute
+                changes, because the odds move with the clock.
+              </p>
+            )}
           </div>
           <div className="measure__actions">
             <Button onClick={measureOnce}>Measure</Button>

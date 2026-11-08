@@ -24,7 +24,7 @@
     {
       "type": "odds",
       "title": "Measurement",
-      "note": "Each measurement is a dart thrown at this square. The lines split it by each qubit’s odds, so the cell a dart lands in is what the clock reads."
+      "note": "Measuring makes each qubit pick 0 or 1. Picture it as throwing a dart at random into this square. The black line splits it by the time qubit’s odds and the pink line by the date qubit’s, so each box is as big as the chance of that reading. Whichever box the dart lands in is what the clock reads."
     },
     {
       "type": "circuit",
