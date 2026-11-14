@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 import { QUBITS, type ClockState, type QubitName } from "../quantum";
 import { useClock } from "../hooks/env";
 
@@ -11,22 +11,16 @@ interface QlockValue {
   /** The qubits on show, in page order. */
   visible: QubitName[];
   /**
-   * Clicking a qubit while both are shown isolates it. Clicking either one
-   * while a single qubit is isolated brings both back.
+   * Show only this qubit. Clicking the qubit that is already shown on its own
+   * brings both back.
    */
   focus: (q: QubitName) => void;
+  /** Show both qubits. */
+  showBoth: () => void;
 }
 
-const STORE = "qlock-shown";
 const BOTH: Shown = { time: true, date: true };
-
-function loadShown(): Shown {
-  try {
-    const raw = JSON.parse(localStorage.getItem(STORE) ?? "null");
-    if (raw && typeof raw.time === "boolean" && typeof raw.date === "boolean" && (raw.time || raw.date)) return raw;
-  } catch { /* storage unavailable or corrupt */ }
-  return BOTH;
-}
+const only = (q: QubitName): Shown => ({ time: q === "time", date: q === "date" });
 
 const Ctx = createContext<QlockValue | null>(null);
 
@@ -37,20 +31,21 @@ const Ctx = createContext<QlockValue | null>(null);
  */
 export function QlockProvider({ children }: { children: ReactNode }) {
   const clock = useClock();
-  const [shown, setShown] = useState<Shown>(loadShown);
-
-  useEffect(() => { try { localStorage.setItem(STORE, JSON.stringify(shown)); } catch { /* ignore */ } }, [shown]);
+  // Every visit opens on both qubits.
+  const [shown, setShown] = useState<Shown>(BOTH);
 
   const focus = useCallback((q: QubitName) => {
-    setShown((s) => (s.time && s.date ? { time: q === "time", date: q === "date" } : BOTH));
+    setShown((s) => (s[q] && !(s.time && s.date) ? BOTH : only(q)));
   }, []);
+  const showBoth = useCallback(() => setShown(BOTH), []);
 
   const value = useMemo<QlockValue>(() => ({
     clock,
     shown,
     visible: QUBITS.filter((q) => shown[q]),
     focus,
-  }), [clock, shown, focus]);
+    showBoth,
+  }), [clock, shown, focus, showBoth]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

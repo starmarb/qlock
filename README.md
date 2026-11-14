@@ -9,7 +9,7 @@ qlock tells the time and date as the state of two qubits, drawn together on one 
 A single qubit's state is fixed by just two angles, and both are already telling the time, so the date gets its own qubit. The full state is |t⟩ ⊗ |d⟩.
 
 Under the clock:
-- **Time and Date rows:** each row is a toggle. Click one to look at that qubit on its own on the sphere, in the state, and in the sandbox; click again to see both.
+- **Time and Date rows:** click one to look at only that qubit on the sphere, in the state, and in the sandbox. Click the other row to switch, or Show both to bring both back. The page always opens with both.
 - **Sandbox:** try to make this state with gates. Both qubits start at |0⟩ and you add gates (H, X, Y, Z, S, T, their inverses, and R<sub>y</sub>/R<sub>z</sub> at any angle) to steer each one to the clock's state. A small sphere per qubit shows your hand against the target, with how close you are. "Show Answers" reveals three solutions (two rotations, one U gate, or the shortest Clifford + T sequence found) and can load any of them into the sandbox.
 
 The About page has a labelled diagram of the sphere with a slider to scrub through the day or the year, so you can see where each hour, minute, month, and day puts the hand.

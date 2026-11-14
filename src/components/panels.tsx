@@ -1,4 +1,4 @@
-import { ReadoutToggle, Tex } from "../ds";
+import { Button, ReadoutToggle, Tex } from "../ds";
 import { MONTHS, amplitudesTex, fracTex, type QubitName } from "../quantum";
 import { useQlock } from "./QlockContext";
 
@@ -6,11 +6,12 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 // ---------------------------------------------------------------------------
 // Readout: the time and date as you'd normally read them, plus their angles.
-// Each row is also a toggle: click one to look at that qubit on its own,
-// click again to see both.
+// Each row is also a toggle: click one to look at only that qubit. Clicking
+// the other row switches to it; "Show both" (or clicking the shown row again)
+// brings both back.
 
 export function ReadoutPanel({ rows }: { rows: QubitName[] }) {
-  const { clock: s, shown, focus } = useQlock();
+  const { clock: s, shown, focus, showBoth } = useQlock();
   const both = shown.time && shown.date;
   const content: Record<QubitName, { label: string; value: string; tex: string }> = {
     time: {
@@ -24,8 +25,7 @@ export function ReadoutPanel({ rows }: { rows: QubitName[] }) {
       tex: `\\theta = ${fracTex(s.date.theta)},\\;\\; \\phi = ${fracTex(s.date.phi)}`,
     },
   };
-  const hint = (q: QubitName) =>
-    both ? `Show only the ${q} qubit` : shown[q] ? "Show both qubits" : `Show the ${q} qubit too`;
+  const hint = (q: QubitName) => (both || !shown[q] ? `Show only the ${q} qubit` : "Show both qubits");
 
   return (
     <section className="readout" aria-label="Time and date">
@@ -36,11 +36,16 @@ export function ReadoutPanel({ rows }: { rows: QubitName[] }) {
             aside={<Tex src={content[q].tex} />} />
         ))}
       </div>
-      <p className="readout__hint" aria-live="polite">
-        {both
-          ? "Click Time or Date to look at that qubit on its own."
-          : `Showing only the ${shown.time ? "time" : "date"} qubit. Click either row to see both again.`}
-      </p>
+      <div className="readout__hint" aria-live="polite">
+        {both ? (
+          <p>Click Time or Date to look at only that qubit.</p>
+        ) : (
+          <>
+            <p>Showing only the {shown.time ? "time" : "date"} qubit.</p>
+            <Button variant="quiet" className="readout__both" onClick={showBoth}>Show both</Button>
+          </>
+        )}
+      </div>
     </section>
   );
 }

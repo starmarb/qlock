@@ -22,7 +22,7 @@ function About() {
       <BlochDiagram />
 
       <h2>Reading the date</h2>
-      <p>Two angles are all a single qubit has, and both are already telling the time, so the date gets a qubit of its own, drawn as the pink arrow on the same sphere. The month sets its <K s="\theta" /> and the day sets its <K s="\phi" />, so 1 January is <K s="\ket{0}" /> and the year ends near <K s="\ket{1}" />. The pink hand in the diagram above is the date qubit. Together the two qubits make one state, <K s="\ket{t} \otimes \ket{d}" />. Under the clock, click Time or Date to look at one qubit on its own, and click again to see both.</p>
+      <p>Two angles are all a single qubit has, and both are already telling the time, so the date gets a qubit of its own, drawn as the pink arrow on the same sphere. The month sets its <K s="\theta" /> and the day sets its <K s="\phi" />, so 1 January is <K s="\ket{0}" /> and the year ends near <K s="\ket{1}" />. The pink hand in the diagram above is the date qubit. Together the two qubits make one state, <K s="\ket{t} \otimes \ket{d}" />. Under the clock, click Time or Date to look at only that qubit, and click Show both to bring the other back.</p>
 
       <h2>Building the state with gates</h2>
       <p>Every qubit in a quantum computer starts in <K s="\ket{0}" />. In the sandbox below the clock, you add gates to steer it from there to the current state. Show Answers gives three ways to get there: two rotations, a single general <K s="U" /> gate, or a sequence of the discrete gates real hardware runs, which gets very close but usually not exactly there.</p>
