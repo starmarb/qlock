@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { shellVertex, shellFragment, solidVertex, solidFragment } from "./shaders";
-import type { QubitName, Outcome } from "../quantum";
+import type { QubitName } from "../quantum";
 
 export interface SceneColors { ink: string; muted: string; rule: string; date: string }
 
@@ -9,32 +9,26 @@ export interface SceneStats { fps: number; frameMs: number; drawCalls: number; r
 
 const HAND_RADIUS = 0.013;
 const TIP_RADIUS = 0.04;
-const COLLAPSE_MS = 650;
-const PULSE_MS = 1400;
-
-const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+const FADE_MS = 260;
+const QUBITS: QubitName[] = ["time", "date"];
 
 interface Hand {
   group: THREE.Group;
-  rod: THREE.Mesh;
   tip: THREE.Mesh;
   material: THREE.ShaderMaterial;
-  live: THREE.Vector3;     // where the clock says the hand points
-  shown: THREE.Vector3;    // where it is drawn right now
-  from: THREE.Vector3;     // start of the current animation
-  to: THREE.Vector3;       // end of the current animation
-  animStart: number;       // ms, < 0 when idle
-  collapsed: boolean;
+  dir: THREE.Vector3;  // where the clock says the hand points
+  on: boolean;         // whether this qubit is being shown
+  fade: number;        // 0..1, eased toward `on`
 }
 
 /**
  * Owns the WebGL renderer for the Bloch sphere. React mounts it into a div and
- * talks to it through a small imperative API (setHands, setColors, collapse,
- * release); it never re-creates the scene on re-render.
+ * talks to it through a small imperative API (setHands, setShown, setColors);
+ * it never re-creates the scene on re-render.
  *
- * Frames are only drawn when something changes: the camera moves, a hand
- * animates, or the ambient wave is running. With reduced motion on and nothing
- * moving, the GPU is idle.
+ * Frames are only drawn when something changes: the camera moves, a hand fades
+ * in or out, or the ambient ripples are running. With reduced motion on and
+ * nothing moving, the GPU is idle.
  */
 export class BlochScene {
   readonly renderer: THREE.WebGLRenderer;
@@ -54,7 +48,7 @@ export class BlochScene {
   private onScreen = true;
   private motion = true;
   private start = performance.now();
-  private pulseStart = -1;
+  private lastStep = performance.now();
   private disposed = false;
 
   // frame stats for ?debug
@@ -67,7 +61,7 @@ export class BlochScene {
   /** Called each frame with the screen position of the |0⟩ and |1⟩ poles. */
   onPoles?: (zero: { x: number; y: number }, one: { x: number; y: number }) => void;
 
-  constructor(host: HTMLElement, colors: SceneColors, opts: { reducedMotion: boolean }) {
+  constructor(host: HTMLElement, colors: SceneColors, opts: { reducedMotion: boolean; shown: Record<QubitName, boolean> }) {
     this.host = host;
     this.motion = !opts.reducedMotion;
 
@@ -104,11 +98,10 @@ export class BlochScene {
       uInk: { value: new THREE.Color() },
       uRule: { value: new THREE.Color() },
       uDate: { value: new THREE.Color() },
-      uPulseColor: { value: new THREE.Color() },
       uTimeDir: { value: new THREE.Vector3(0, 0, 1) },
       uDateDir: { value: new THREE.Vector3(0, 0, 1) },
-      uPulseOrigin: { value: new THREE.Vector3(0, 0, 1) },
-      uPulse: { value: -1 },
+      uTimeOn: { value: 1 },
+      uDateOn: { value: 1 },
       uClock: { value: 0 },
       uMotion: { value: this.motion ? 1 : 0 },
       uBack: { value: 0 },
@@ -138,33 +131,30 @@ export class BlochScene {
     const rodGeo = new THREE.CylinderGeometry(HAND_RADIUS, HAND_RADIUS, 1, 16, 1);
     rodGeo.translate(0, 0.5, 0); // span y ∈ [0, 1] so it can be aimed like a vector
     const tipGeo = new THREE.SphereGeometry(TIP_RADIUS, 24, 16);
-    const makeHand = (): Hand => {
+    const makeHand = (on: boolean): Hand => {
       const material = new THREE.ShaderMaterial({
         vertexShader: solidVertex,
         fragmentShader: solidFragment,
-        uniforms: { uColor: { value: new THREE.Color() }, uOpacity: { value: 1 } },
+        uniforms: { uColor: { value: new THREE.Color() }, uOpacity: { value: on ? 1 : 0 } },
+        transparent: true,
       });
       const group = new THREE.Group();
-      const rod = new THREE.Mesh(rodGeo, material);
       const tip = new THREE.Mesh(tipGeo, material);
-      group.add(rod, tip);
+      tip.position.set(0, 1, 0);
+      group.add(new THREE.Mesh(rodGeo, material), tip);
+      group.visible = on;
       this.bloch.add(group);
-      const up = new THREE.Vector3(0, 0, 1);
-      return {
-        group, rod, tip, material,
-        live: up.clone(), shown: up.clone(), from: up.clone(), to: up.clone(),
-        animStart: -1, collapsed: false,
-      };
+      return { group, tip, material, dir: new THREE.Vector3(0, 0, 1), on, fade: on ? 1 : 0 };
     };
-    this.hands = { time: makeHand(), date: makeHand() };
+    this.hands = { time: makeHand(opts.shown.time), date: makeHand(opts.shown.date) };
     // draw the date hand first so the time hand wins where they overlap
     this.hands.date.group.renderOrder = 0;
+    this.hands.time.group.renderOrder = 3;
 
-    const dotMaterial = (opacity = 1) => new THREE.ShaderMaterial({
+    const dotMaterial = () => new THREE.ShaderMaterial({
       vertexShader: solidVertex,
       fragmentShader: solidFragment,
-      uniforms: { uColor: { value: new THREE.Color() }, uOpacity: { value: opacity } },
-      transparent: opacity < 1,
+      uniforms: { uColor: { value: new THREE.Color() }, uOpacity: { value: 1 } },
     });
     const poleGeo = new THREE.SphereGeometry(0.03, 20, 12);
     this.poles = {
@@ -197,11 +187,19 @@ export class BlochScene {
   // public API
 
   setHands(dirs: Record<QubitName, [number, number, number]>) {
-    for (const name of ["time", "date"] as QubitName[]) {
-      const h = this.hands[name];
-      h.live.set(...dirs[name]).normalize();
-      if (!h.collapsed && h.animStart < 0) h.shown.copy(h.live);
+    for (const q of QUBITS) {
+      const h = this.hands[q];
+      h.dir.set(...dirs[q]).normalize();
+      h.group.quaternion.setFromUnitVectors(Y, h.dir);
     }
+    this.invalidate();
+  }
+
+  /** Show or hide each qubit's hand and its marks on the glass. */
+  setShown(shown: Record<QubitName, boolean>) {
+    for (const q of QUBITS) this.hands[q].on = shown[q];
+    if (!this.motion) for (const q of QUBITS) this.hands[q].fade = shown[q] ? 1 : 0;
+    this.lastStep = performance.now();
     this.invalidate();
   }
 
@@ -218,50 +216,12 @@ export class BlochScene {
     (this.poles.zero.material as THREE.ShaderMaterial).uniforms.uColor.value.set(c.ink);
     (this.poles.one.material as THREE.ShaderMaterial).uniforms.uColor.value.set(c.muted);
     (this.poles.origin.material as THREE.ShaderMaterial).uniforms.uColor.value.set(c.ink);
-    this.colors = c;
     this.invalidate();
   }
-  private colors?: SceneColors;
 
   setReducedMotion(reduced: boolean) {
     this.motion = !reduced;
     for (const m of [this.shellBack, this.shellFront]) m.uniforms.uMotion.value = this.motion ? 1 : 0;
-    this.kick();
-  }
-
-  /** Snap each hand to the pole it was measured at, with a wave on the glass. */
-  collapse(outcomes: Record<QubitName, Outcome>) {
-    const now = performance.now();
-    for (const name of ["time", "date"] as QubitName[]) {
-      const h = this.hands[name];
-      h.from.copy(h.shown);
-      h.to.set(0, 0, outcomes[name] === 0 ? 1 : -1);
-      h.animStart = now;
-      h.collapsed = true;
-    }
-    // the wave starts from the time hand, in the colour of the qubit that moved further
-    const tMove = this.hands.time.from.angleTo(this.hands.time.to);
-    const dMove = this.hands.date.from.angleTo(this.hands.date.to);
-    const lead = dMove > tMove ? "date" : "time";
-    const color = lead === "date" ? this.colors!.date : this.colors!.ink;
-    for (const m of [this.shellBack, this.shellFront]) {
-      m.uniforms.uPulseOrigin.value.copy(this.hands[lead].from);
-      m.uniforms.uPulseColor.value.set(color);
-    }
-    this.pulseStart = now;
-    this.kick();
-  }
-
-  /** Return the hands to the live time. */
-  release() {
-    const now = performance.now();
-    for (const name of ["time", "date"] as QubitName[]) {
-      const h = this.hands[name];
-      h.from.copy(h.shown);
-      h.to.copy(h.live);
-      h.animStart = now;
-      h.collapsed = false;
-    }
     this.kick();
   }
 
@@ -296,9 +256,12 @@ export class BlochScene {
     this.kick();
   }
 
+  private fading(): boolean {
+    return QUBITS.some((q) => this.hands[q].fade !== (this.hands[q].on ? 1 : 0));
+  }
+
   private needsContinuous(): boolean {
-    const animating = this.hands.time.animStart >= 0 || this.hands.date.animStart >= 0 || this.pulseStart >= 0;
-    return animating || this.motion;
+    return this.motion || this.fading();
   }
 
   private kick = () => {
@@ -314,7 +277,8 @@ export class BlochScene {
 
     const damping = this.controls.update(); // true while the camera is still easing
     this.step(now);
-    this.render(now);
+    this.renderer.render(this.scene, this.camera);
+    this.reportPoles();
     this.dirty = false;
 
     this.lastFrameMs = performance.now() - t0;
@@ -340,44 +304,40 @@ export class BlochScene {
   };
 
   private step(now: number) {
-    for (const name of ["time", "date"] as QubitName[]) {
-      const h = this.hands[name];
-      if (h.animStart >= 0) {
-        const t = Math.min(1, (now - h.animStart) / COLLAPSE_MS);
-        slerpUnit(h.from, h.to, easeInOut(t), h.shown);
-        if (t >= 1) h.animStart = -1;
-      } else if (!h.collapsed) {
-        h.shown.copy(h.live);
+    const dt = Math.max(0, now - this.lastStep);
+    this.lastStep = now;
+    for (const q of QUBITS) {
+      const h = this.hands[q];
+      const target = h.on ? 1 : 0;
+      if (h.fade !== target) {
+        const d = dt / FADE_MS;
+        h.fade = target > h.fade ? Math.min(1, h.fade + d) : Math.max(0, h.fade - d);
       }
-      aimHand(h);
-    }
-
-    let pulse = -1;
-    if (this.pulseStart >= 0) {
-      pulse = (now - this.pulseStart) / PULSE_MS;
-      if (pulse >= 1) { pulse = -1; this.pulseStart = -1; }
+      const eased = h.fade * h.fade * (3 - 2 * h.fade);
+      h.material.uniforms.uOpacity.value = eased;
+      h.group.visible = h.fade > 0.001;
     }
 
     const clock = (now - this.start) / 1000;
+    const ease = (f: number) => f * f * (3 - 2 * f);
     for (const m of [this.shellBack, this.shellFront]) {
-      m.uniforms.uTimeDir.value.copy(this.hands.time.shown);
-      m.uniforms.uDateDir.value.copy(this.hands.date.shown);
-      m.uniforms.uPulse.value = pulse;
+      m.uniforms.uTimeDir.value.copy(this.hands.time.dir);
+      m.uniforms.uDateDir.value.copy(this.hands.date.dir);
+      m.uniforms.uTimeOn.value = ease(this.hands.time.fade);
+      m.uniforms.uDateOn.value = ease(this.hands.date.fade);
       m.uniforms.uClock.value = clock;
     }
   }
 
-  private render(_now: number) {
-    this.renderer.render(this.scene, this.camera);
-    if (this.onPoles) {
-      const project = (m: THREE.Mesh) => {
-        const v = new THREE.Vector3();
-        m.getWorldPosition(v).project(this.camera);
-        const r = this.renderer.domElement.getBoundingClientRect();
-        return { x: (v.x * 0.5 + 0.5) * r.width, y: (-v.y * 0.5 + 0.5) * r.height };
-      };
-      this.onPoles(project(this.poles.zero), project(this.poles.one));
-    }
+  private reportPoles() {
+    if (!this.onPoles) return;
+    const r = this.renderer.domElement.getBoundingClientRect();
+    const project = (m: THREE.Mesh) => {
+      const v = new THREE.Vector3();
+      m.getWorldPosition(v).project(this.camera);
+      return { x: (v.x * 0.5 + 0.5) * r.width, y: (-v.y * 0.5 + 0.5) * r.height };
+    };
+    this.onPoles(project(this.poles.zero), project(this.poles.one));
   }
 
   private resize() {
@@ -393,28 +353,8 @@ export class BlochScene {
   }
 }
 
-// Point a hand (built along +y) at a unit vector in the Bloch frame.
+// Hands are built along +y and aimed at a unit vector in the Bloch frame.
 const Y = new THREE.Vector3(0, 1, 0);
-function aimHand(h: Hand) {
-  h.group.quaternion.setFromUnitVectors(Y, h.shown);
-  h.tip.position.set(0, 1, 0);
-}
-
-// Spherical interpolation between unit vectors, safe at the antipode.
-function slerpUnit(a: THREE.Vector3, b: THREE.Vector3, t: number, out: THREE.Vector3): THREE.Vector3 {
-  const dot = THREE.MathUtils.clamp(a.dot(b), -1, 1);
-  const omega = Math.acos(dot);
-  if (omega < 1e-5) return out.copy(b);
-  if (Math.PI - omega < 1e-3) {
-    // a and b are opposite: swing through any perpendicular direction
-    const perp = Math.abs(a.x) < 0.9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0);
-    const mid = perp.sub(a.clone().multiplyScalar(perp.dot(a))).normalize();
-    return t < 0.5 ? slerpUnit(a, mid, t * 2, out) : slerpUnit(mid, b, (t - 0.5) * 2, out);
-  }
-  const s = Math.sin(omega);
-  return out.copy(a).multiplyScalar(Math.sin((1 - t) * omega) / s)
-    .add(b.clone().multiplyScalar(Math.sin(t * omega) / s));
-}
 
 export function webglAvailable(): boolean {
   try {

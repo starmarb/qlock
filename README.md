@@ -9,7 +9,7 @@ qlock tells the time and date as the state of two qubits, drawn together on one 
 A single qubit's state is fixed by just two angles, and both are already telling the time, so the date gets its own qubit. The full state is |t⟩ ⊗ |d⟩.
 
 Under the clock:
-- **Measurement:** a square split by each qubit's odds, so its four cells are the four possible readings with areas equal to their chances. Each measurement is a dart thrown at the square, and the cell it lands in is what the clock reads, so the hand on the sphere collapses to that pole. "Measure 100 times" throws a hundred darts, and you can watch the cells fill in proportion to their odds.
+- **Time and Date rows:** each row is a toggle. Click one to look at that qubit on its own on the sphere, in the state, and in the sandbox; click again to see both.
 - **Sandbox:** try to make this state with gates. Both qubits start at |0⟩ and you add gates (H, X, Y, Z, S, T, their inverses, and R<sub>y</sub>/R<sub>z</sub> at any angle) to steer each one to the clock's state. A small sphere per qubit shows your hand against the target, with how close you are. "Show Answers" reveals three solutions (two rotations, one U gate, or the shortest Clifford + T sequence found) and can load any of them into the sandbox.
 
 The About page has a labelled diagram of the sphere with a slider to scrub through the day or the year, so you can see where each hour, minute, month, and day puts the hand.
@@ -26,19 +26,19 @@ The glass shell is one sphere mesh drawn twice, back faces first and then front 
 | --- | --- |
 | Equator and meridians | distance to each great circle, anti-aliased with `fwidth` so lines stay one pixel wide at any size |
 | 15° graticule | the same, on latitude and longitude, fading near the poles where meridians bunch up |
-| Dashed odds rings | a ring at each hand's latitude; every point on it has the same chance of reading 0 |
+| Dashed latitude rings | a ring at each hand's latitude, which is what the hour (or month) sets |
 | Glow where a hand meets the glass | Gaussian falloff on the angle to each hand |
-| Measurement wave | a ring that travels from the hand to the far side of the sphere, thinned where it runs edge-on to the camera |
 | Ambient ripples | thin rings drifting outward from each hand tip, off when reduced motion is on |
+| Showing one qubit | each qubit's marks are scaled by a 0–1 uniform that eases when you toggle it, so hands and their marks fade rather than pop |
 
 Colours come from the same CSS tokens as the rest of the page, read into uniforms, so a theme change reaches the GPU without any colour written twice. The whole sphere is 9 draw calls.
 
 ### Why it runs in the browser, not as a video
 
-The picture depends on the exact minute and date, the angle you've turned the sphere to, your light or dark theme, and the random result of each measurement. A video can't show any of that.
+The picture depends on the exact minute and date, the angle you've turned the sphere to, your light or dark theme, and which qubits you've chosen to show. A video can't show any of that.
 
 Keeping it light:
-- Frames are only drawn while something is moving (camera easing, a hand animating, or the ripples). With reduced motion on and nothing moving, the GPU is idle.
+- Frames are only drawn while something is moving (camera easing, a hand fading in or out, or the ripples). With reduced motion on and nothing moving, the GPU is idle.
 - Drawing stops when the sphere is scrolled off screen or the tab is hidden.
 - Pixel ratio is capped at 2.
 - Without WebGL, the page shows a still SVG of the same view.
@@ -46,7 +46,7 @@ Keeping it light:
 
 ### React and the scene (`src/components/BlochSphere.tsx`)
 
-React owns the lifecycle and `BlochScene` owns the GPU. The scene is created once and updated through a small API (`setHands`, `setColors`, `collapse`, `release`), so a re-render never rebuilds a buffer or recompiles a shader. The |0⟩ and |1⟩ labels follow the camera by writing transforms straight to the DOM each frame, without going through React state.
+React owns the lifecycle and `BlochScene` owns the GPU. The scene is created once and updated through a small API (`setHands`, `setShown`, `setColors`), so a re-render never rebuilds a buffer or recompiles a shader. The |0⟩ and |1⟩ labels follow the camera by writing transforms straight to the DOM each frame, without going through React state.
 
 ### Page layout as JSON (`src/ui/`)
 
@@ -73,7 +73,6 @@ URL switches for testing:
 - `?debug` shows frame stats
 
 ## Still in the works
-- Measuring in the X or Y basis, not just Z
-- Entangling the two qubits, so measuring one changes the odds for the other
+- Entangling the two qubits, so the time and date are no longer independent
 
 A personal project by Sammi Kwon.

@@ -22,20 +22,14 @@ function About() {
       <BlochDiagram />
 
       <h2>Reading the date</h2>
-      <p>Two angles are all a single qubit has, and both are already telling the time, so the date gets a qubit of its own, drawn as the pink arrow on the same sphere. The month sets its <K s="\theta" /> and the day sets its <K s="\phi" />, so 1 January is <K s="\ket{0}" /> and the year ends near <K s="\ket{1}" />. The pink hand in the diagram above is the date qubit. Together the two qubits make one state, <K s="\ket{t} \otimes \ket{d}" />.</p>
-
-      <h2>Measuring the clock</h2>
-      <p>Measuring a qubit collapses it to <K s="\ket{0}" /> or <K s="\ket{1}" />. The chance of reading 0 is</p>
-      <Tex as="div" className="math" display src="P(0) = \cos^2\tfrac{\theta}{2} = \tfrac{1 + z}{2}" />
-      <p>where <K s="z" /> is the arrow's height on the sphere. <K s="\phi" /> never changes the odds, so every point on a line of latitude has the same chance. That is what the dashed rings on the sphere show. At midnight the time qubit always reads 0; at noon it is a coin toss; just before midnight it almost always reads 1.</p>
-      <p>The two qubits never interact, so the chance of a joint reading like <K s="\ket{10}" /> is just the two chances multiplied. Press “Measure 100 times” and watch the tally settle toward the expected odds.</p>
+      <p>Two angles are all a single qubit has, and both are already telling the time, so the date gets a qubit of its own, drawn as the pink arrow on the same sphere. The month sets its <K s="\theta" /> and the day sets its <K s="\phi" />, so 1 January is <K s="\ket{0}" /> and the year ends near <K s="\ket{1}" />. The pink hand in the diagram above is the date qubit. Together the two qubits make one state, <K s="\ket{t} \otimes \ket{d}" />. Under the clock, click Time or Date to look at one qubit on its own, and click again to see both.</p>
 
       <h2>Building the state with gates</h2>
-      <p>Every qubit in a quantum computer starts in <K s="\ket{0}" />. Below the clock are three ways to reach the current state from there: two rotations, a single general <K s="U" /> gate, or a sequence of the discrete gates real hardware runs, which gets very close but usually not exactly there.</p>
+      <p>Every qubit in a quantum computer starts in <K s="\ket{0}" />. In the sandbox below the clock, you add gates to steer it from there to the current state. Show Answers gives three ways to get there: two rotations, a single general <K s="U" /> gate, or a sequence of the discrete gates real hardware runs, which gets very close but usually not exactly there.</p>
 
       <h2>How it is drawn</h2>
-      <p>The sphere is rendered live in the browser with Three.js and custom GLSL shaders. Everything on the glass is computed per pixel from where that pixel sits on the sphere: the great circles, the graticule, the odds rings, the glow where each hand touches the glass, the wave that spreads out when you measure, and thin ripples that drift outward from each hand tip.</p>
-      <p>It has to run live rather than as a video because the picture depends on the exact minute, the date, where you have turned the sphere, your light or dark theme, and the random result of each measurement. To keep it light, the page only draws frames while something is moving, stops when the sphere is scrolled away or the tab is hidden, caps the pixel ratio at 2, and holds still entirely if your system asks for reduced motion. Add <code>?debug</code> to the address to see the frame rate.</p>
+      <p>The sphere is rendered live in the browser with Three.js and custom GLSL shaders. Everything on the glass is computed per pixel from where that pixel sits on the sphere: the great circles, the graticule, a dashed ring at each hand's latitude, the glow where each hand touches the glass, and thin ripples that drift outward from each hand tip.</p>
+      <p>It has to run live rather than as a video because the picture depends on the exact minute, the date, where you have turned the sphere, your light or dark theme, and which qubits you have chosen to show. To keep it light, the page only draws frames while something is moving, stops when the sphere is scrolled away or the tab is hidden, caps the pixel ratio at 2, and holds still entirely if your system asks for reduced motion. Add <code>?debug</code> to the address to see the frame rate.</p>
     </Shell>
   );
 }

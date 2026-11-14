@@ -10,7 +10,6 @@
 import { Fragment, type ReactNode } from "react";
 import { BlochSphere } from "../components/BlochSphere";
 import { ReadoutPanel, StatePanel } from "../components/panels";
-import { MeasurePanel } from "../components/MeasurePanel";
 import { Sandbox, type CircuitMode } from "../components/Sandbox";
 import type { QubitName } from "../quantum";
 
@@ -41,10 +40,6 @@ export const registry: Record<string, Entry<any>> = {
   readout: entry(
     (s) => (Array.isArray(s.rows) && s.rows.every(isQubit) ? { rows: s.rows as QubitName[] } : "rows must be time and/or date"),
     ({ rows }) => <ReadoutPanel rows={rows} />,
-  ),
-  odds: entry(
-    (s) => (isStr(s.title) && isStr(s.note) ? { title: s.title, note: s.note } : "needs title and note"),
-    (p) => <MeasurePanel {...p} />,
   ),
   state: entry(() => ({}), () => <StatePanel />),
   circuit: entry(

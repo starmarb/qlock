@@ -149,6 +149,49 @@
 }
 .ds-readout__aside .katex { font-size: 1.05em; color: var(--color-ink); }
 
+/* Readout toggle: the whole row is a button.
+ * states: on, off, hover, focus-visible */
+.ds-readout--toggles { border-top: var(--rule-width) solid var(--color-rule); }
+.ds-readout__row--toggle {
+  appearance: none;
+  width: 100%;
+  padding-inline: var(--space-2);
+  background: none;
+  border: 0;
+  border-bottom: var(--rule-width) solid var(--color-rule);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.ds-readout__row--toggle:hover { background: var(--color-faint); }
+.ds-readout__row--toggle:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
+.ds-readout__row--toggle .ds-readout__label { display: inline-flex; align-items: center; color: var(--color-ink); }
+.ds-readout__row--toggle .ds-readout__value,
+.ds-readout__row--toggle .ds-readout__aside { transition: opacity var(--duration-base) var(--ease-out); }
+.ds-readout__row--toggle.is-off .ds-readout__label { color: var(--color-muted); }
+.ds-readout__row--toggle.is-off .ds-readout__value,
+.ds-readout__row--toggle.is-off .ds-readout__aside { opacity: 0.35; }
+
+/* ---------- Check ---------- */
+.ds-check {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  margin-right: var(--space-2);
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  color: var(--color-ink);
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.ds-check--date { color: var(--color-date); }
+.ds-check svg { width: 0.6875rem; height: 0.6875rem; fill: none; stroke: var(--color-bg); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+.ds-check.is-on { background: currentColor; }
+.ds-check.is-on svg { opacity: 1; }
+
 /* ---------- Swatch ---------- */
 .ds-swatch {
   display: inline-block;

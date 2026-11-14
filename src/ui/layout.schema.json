@@ -81,28 +81,6 @@
             "type": "object",
             "properties": {
               "type": {
-                "const": "odds"
-              },
-              "title": {
-                "type": "string",
-                "minLength": 1
-              },
-              "note": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "type",
-              "title",
-              "note"
-            ],
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "properties": {
-              "type": {
                 "const": "state"
               }
             },

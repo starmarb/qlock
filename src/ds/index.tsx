@@ -135,6 +135,37 @@ export function ReadoutRow({ label, value, aside, swatch }: {
   );
 }
 
+/**
+ * A readout row that is also a toggle: the whole row is one button, and its
+ * check mark shows whether that thing is switched on.
+ */
+export function ReadoutToggle({ label, value, aside, tone = "ink", on, onClick, hint }: {
+  label: string;
+  value: ReactNode;
+  aside?: ReactNode;
+  tone?: "ink" | "date";
+  on: boolean;
+  onClick: () => void;
+  hint: string;
+}) {
+  return (
+    <button type="button" className={`ds-readout__row ds-readout__row--toggle${on ? "" : " is-off"}`}
+      aria-pressed={on} onClick={onClick} title={hint}>
+      <span className="ds-readout__label"><Check tone={tone} on={on} />{label}</span>
+      <span className="ds-readout__value">{value}</span>
+      {aside !== undefined && <span className="ds-readout__aside">{aside}</span>}
+    </button>
+  );
+}
+
+export function Check({ tone = "ink", on }: { tone?: "ink" | "date"; on: boolean }) {
+  return (
+    <span className={`ds-check ds-check--${tone}${on ? " is-on" : ""}`} aria-hidden="true">
+      <svg viewBox="0 0 12 12"><path d="M2.5 6.4 4.9 8.7 9.5 3.6" /></svg>
+    </span>
+  );
+}
+
 export function Swatch({ tone = "ink", dashed = false }: { tone?: "ink" | "date"; dashed?: boolean }) {
   return <span className={`ds-swatch ds-swatch--${tone}${dashed ? " ds-swatch--dashed" : ""}`} aria-hidden="true" />;
 }

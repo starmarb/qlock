@@ -22,14 +22,9 @@
       "type": "state"
     },
     {
-      "type": "odds",
-      "title": "Measurement",
-      "note": "Measuring makes each qubit pick 0 or 1. Picture it as throwing a dart at random into this square. The black line splits it by the time qubit’s odds and the pink line by the date qubit’s, so each box is as big as the chance of that reading. Whichever box the dart lands in is what the clock reads."
-    },
-    {
       "type": "circuit",
       "title": "Sandbox",
-      "intro": "Try to make this state with gates. Both qubits start at |0⟩. Add gates to steer each one to where the clock is pointing. The dashed hand is the target; the solid one is yours.",
+      "intro": "Try to make this state with gates. Each qubit starts at |0⟩. Add gates to steer it to where the clock is pointing. The dashed hand is the target; the solid one is yours.",
       "modes": [
         {
           "id": "rot",

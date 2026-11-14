@@ -9,10 +9,10 @@ import { Circuit, type CircuitWire } from "./Circuit";
 import { makeView, onSphere, type Vec3 } from "./blochSvg";
 import { useQlock } from "./QlockContext";
 
-// "Try to make this state with gates": both qubits start at |0⟩ and you add
-// gates to steer each one to where the clock is pointing. A small sphere per
-// qubit shows your hand against the target, and an answer can be revealed and
-// loaded into the workspace.
+// Sandbox: each qubit starts at |0⟩ and you add gates to steer it to where
+// the clock is pointing. A small sphere per qubit shows your hand against the
+// target, and an answer can be revealed and loaded into the workspace. Only
+// the qubits picked in the readout are shown; gates on a hidden one are kept.
 
 export interface CircuitMode { id: GateMode; label: string; caption: string }
 type Wires = Record<QubitName, PlacedGate[]>;
@@ -65,10 +65,11 @@ function loadWires(): Wires {
 }
 
 export function Sandbox({ title, intro, modes }: { title: string; intro: string; modes: CircuitMode[] }) {
-  const { clock: s } = useQlock();
+  const { clock: s, visible } = useQlock();
   const [wires, setWires] = useState<Wires>(loadWires);
   const [history, setHistory] = useState<Wires[]>([]);
-  const [active, setActive] = useState<QubitName>("time");
+  const [picked, setActive] = useState<QubitName>("time");
+  const active = visible.includes(picked) ? picked : visible[0];
   const [selected, setSelected] = useState<{ wire: QubitName; id: number } | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [mode, setMode] = useState<GateMode>(() => {
@@ -113,7 +114,9 @@ export function Sandbox({ title, intro, modes }: { title: string; intro: string;
     setSelected(null);
   };
   const clear = () => {
-    commit({ time: [], date: [] });
+    const next = { ...wires };
+    for (const q of visible) next[q] = [];
+    commit(next);
     setSelected(null);
   };
 
@@ -125,27 +128,27 @@ export function Sandbox({ title, intro, modes }: { title: string; intro: string;
     }
     return r;
   }, [wires, s]);
-  const bothMatch = QUBITS.every((q) => results[q].fid >= MATCH);
+  const allMatch = visible.every((q) => results[q].fid >= MATCH);
 
   // the answer, for the mode being shown
   const ht = useMemo(() => ({
     time: cliffordT(s.time.theta.value, s.time.phi.value),
     date: cliffordT(s.date.theta.value, s.date.phi.value),
   }), [s.key]); // eslint-disable-line react-hooks/exhaustive-deps
-  const answerWires: CircuitWire[] = QUBITS.map((q) => ({
+  const answerWires: CircuitWire[] = visible.map((q) => ({
     name: q,
     gates: (mode === "ht" ? ht[q].gates : gatesFor(mode, s[q])).map((g, i) => ({ ...g, key: i })),
   }));
   const loadAnswer = () => {
-    const next = {} as Wires;
-    for (const q of QUBITS) next[q] = answerGates(mode, s[q]).map((g) => ({ ...g, id: nextId.current++ }));
+    const next = { ...wires };
+    for (const q of visible) next[q] = answerGates(mode, s[q]).map((g) => ({ ...g, id: nextId.current++ }));
     commit(next);
     setSelected(null);
   };
   const currentMode = modes.find((m) => m.id === mode)!;
 
-  const sel = selected ? wires[selected.wire].find((g) => g.id === selected.id) : undefined;
-  const liveWires: CircuitWire[] = QUBITS.map((q) => ({
+  const sel = selected && visible.includes(selected.wire) ? wires[selected.wire].find((g) => g.id === selected.id) : undefined;
+  const liveWires: CircuitWire[] = visible.map((q) => ({
     name: q,
     gates: wires[q].map((g) => ({ ...toGate(g), key: g.id, selected: selected?.wire === q && selected.id === g.id })),
   }));
@@ -162,8 +165,8 @@ export function Sandbox({ title, intro, modes }: { title: string; intro: string;
       <h2 id="sandbox-heading">{title}</h2>
       <p className="sandbox__intro">{intro}</p>
 
-      <div className="sandbox__targets">
-        {QUBITS.map((q) => {
+      <div className={`sandbox__targets${visible.length === 1 ? " is-single" : ""}`}>
+        {visible.map((q) => {
           const r = results[q];
           const matched = r.fid >= MATCH;
           return (
@@ -239,15 +242,15 @@ export function Sandbox({ title, intro, modes }: { title: string; intro: string;
           </>
         ) : (
           <p className="editor__hint">
-            {bothMatch
-              ? <>Both qubits match the clock. You built the time.</>
+            {allMatch
+              ? <>{visible.length === 2 ? "Both qubits match the clock. You built the time and date." : `The ${visible[0]} qubit matches the clock.`}</>
               : <>Gates go on the <b className={`k-${active}`}>{active}</b> wire. Click a gate on the wire to change or remove it. The clock keeps moving, so the target shifts a little every minute.</>}
           </p>
         )}
         {!sel && (
           <div className="editor__actions">
             <Button variant="quiet" onClick={undo} disabled={!history.length}>Undo</Button>
-            <Button variant="quiet" onClick={clear} disabled={!wires.time.length && !wires.date.length}>Clear</Button>
+            <Button variant="quiet" onClick={clear} disabled={visible.every((q) => !wires[q].length)}>Clear</Button>
             <Button variant="quiet" onClick={() => setShowAnswer(!showAnswer)} aria-expanded={showAnswer} aria-controls="answer">
               {showAnswer ? "Hide Answers" : "Show Answers"}
             </Button>
@@ -263,7 +266,7 @@ export function Sandbox({ title, intro, modes }: { title: string; intro: string;
           </div>
           {mode === "ht" && (
             <p className="circuit-note">
-              {QUBITS.map((q, i) => <span key={q}>{i > 0 && <br />}<span className={q}>{q}</span> {sequenceNote(ht[q])}</span>)}
+              {visible.map((q, i) => <span key={q}>{i > 0 && <br />}<span className={q}>{q}</span> {sequenceNote(ht[q])}</span>)}
             </p>
           )}
           <p className="caption" dangerouslySetInnerHTML={{ __html: currentMode.caption }} />

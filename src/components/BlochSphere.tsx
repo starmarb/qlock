@@ -6,11 +6,11 @@ import { useQlock } from "./QlockContext";
 
 /**
  * React owns the lifecycle; BlochScene owns the GPU. The scene is created once
- * and fed new hand angles, colours and measurements through effects, so a
- * re-render never rebuilds a buffer or recompiles a shader.
+ * and fed new hand angles, colours and which qubits are shown through effects,
+ * so a re-render never rebuilds a buffer or recompiles a shader.
  */
 export function BlochSphere({ caption }: { caption: string }) {
-  const { clock, measurement } = useQlock();
+  const { clock, shown } = useQlock();
   const colors = useThemeColors();
   const reducedMotion = useReducedMotion();
   const stageRef = useRef<HTMLDivElement>(null);
@@ -25,7 +25,7 @@ export function BlochSphere({ caption }: { caption: string }) {
 
   useEffect(() => {
     if (!supported || !stageRef.current) return;
-    const scene = new BlochScene(stageRef.current, colors, { reducedMotion });
+    const scene = new BlochScene(stageRef.current, colors, { reducedMotion, shown });
     scene.onPoles = (zero, one) => {
       // move the |0⟩ and |1⟩ labels with the camera, without a React render
       if (zeroRef.current) zeroRef.current.style.transform = `translate(${zero.x + 8}px, ${zero.y - 26}px)`;
@@ -44,16 +44,11 @@ export function BlochSphere({ caption }: { caption: string }) {
   useEffect(() => { sceneRef.current?.setHands({ time: timeDir, date: dateDir }); }, [clock.key]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { sceneRef.current?.setColors(colors); }, [colors]);
   useEffect(() => { sceneRef.current?.setReducedMotion(reducedMotion); }, [reducedMotion]);
-  useEffect(() => {
-    const scene = sceneRef.current;
-    if (!scene) return;
-    if (measurement.shown) scene.collapse(measurement.shown);
-    else scene.release();
-  }, [measurement.shown]);
+  useEffect(() => { sceneRef.current?.setShown(shown); }, [shown]);
 
-  const label = measurement.shown
-    ? `Bloch sphere after measurement: time reads ${measurement.shown.time}, date reads ${measurement.shown.date}`
-    : "Bloch sphere showing the time and date qubits";
+  const label = shown.time && shown.date
+    ? "Bloch sphere showing the time and date qubits"
+    : `Bloch sphere showing the ${shown.time ? "time" : "date"} qubit`;
 
   return (
     <figure className="sphere">
@@ -63,8 +58,7 @@ export function BlochSphere({ caption }: { caption: string }) {
           <span className="sphere__pole" ref={oneRef} aria-hidden="true">|1⟩</span>
         </div>
       ) : (
-        <FallbackSphere timeDir={measurement.shown ? pole(measurement.shown.time) : timeDir}
-          dateDir={measurement.shown ? pole(measurement.shown.date) : dateDir} label={label} />
+        <FallbackSphere timeDir={shown.time ? timeDir : null} dateDir={shown.date ? dateDir : null} label={label} />
       )}
       <figcaption>{supported ? caption : "Your browser has WebGL turned off, so this is a still drawing of the sphere."}</figcaption>
       {debug && stats && (
@@ -79,27 +73,31 @@ export function BlochSphere({ caption }: { caption: string }) {
   );
 }
 
-const pole = (bit: 0 | 1): [number, number, number] => [0, 0, bit === 0 ? 1 : -1];
-
 /** A still SVG of the same view for browsers without WebGL. */
 function FallbackSphere({ timeDir, dateDir, label }: {
-  timeDir: [number, number, number];
-  dateDir: [number, number, number];
+  timeDir: [number, number, number] | null;
+  dateDir: [number, number, number] | null;
   label: string;
 }) {
   // fixed oblique projection: x toward the viewer-left, y right, z up
   const P = ([x, y, z]: [number, number, number]) => [200 + 150 * (y - 0.45 * x), 200 - 150 * (z - 0.3 * x)];
-  const [tx, ty] = P(timeDir);
-  const [dx, dy] = P(dateDir);
+  const hand = (dir: [number, number, number] | null, color: string) => {
+    if (!dir) return null;
+    const [x, y] = P(dir);
+    return (
+      <>
+        <line x1="200" y1="200" x2={x} y2={y} stroke={color} strokeWidth="2.5" />
+        <circle cx={x} cy={y} r="5" fill={color} />
+      </>
+    );
+  };
   return (
     <div className="sphere__stage sphere__fallback" role="img" aria-label={label}>
       <svg viewBox="0 0 400 400">
         <circle cx="200" cy="200" r="150" fill="none" stroke="var(--color-rule)" />
         <ellipse cx="200" cy="200" rx="150" ry="45" fill="none" stroke="var(--color-rule)" />
-        <line x1="200" y1="200" x2={dx} y2={dy} stroke="var(--color-date)" strokeWidth="2.5" />
-        <circle cx={dx} cy={dy} r="5" fill="var(--color-date)" />
-        <line x1="200" y1="200" x2={tx} y2={ty} stroke="var(--color-ink)" strokeWidth="2.5" />
-        <circle cx={tx} cy={ty} r="5" fill="var(--color-ink)" />
+        {hand(dateDir, "var(--color-date)")}
+        {hand(timeDir, "var(--color-ink)")}
         <text x="212" y="44" fill="var(--color-ink)" fontFamily="var(--font-math)">|0⟩</text>
         <text x="212" y="372" fill="var(--color-muted)" fontFamily="var(--font-math)">|1⟩</text>
       </svg>
